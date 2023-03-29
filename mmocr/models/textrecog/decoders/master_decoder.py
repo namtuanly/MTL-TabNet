@@ -10,7 +10,6 @@ from .base_decoder import BaseDecoder
 from ..encoders.positional_encoding import PositionalEncoding
 
 from mmocr.models.builder import DECODERS
-from .local_attention import LocalAttention
 
 class Embeddings(nn.Module):
 
@@ -59,7 +58,6 @@ class FeedForward(nn.Module):
 def self_attention(query, key, value, mask=None, dropout=None):
     """
     Compute 'Scale Dot Product Attention'
-    query, key: (bsz, num_heads, seq_len, head_dim)
     """
 
     d_k = value.size(-1)
@@ -73,56 +71,10 @@ def self_attention(query, key, value, mask=None, dropout=None):
     return torch.matmul(p_attn, value), p_attn
 
 
-class MultiHeadLocalAttention(nn.Module):
-    """
-    Multi Head Local Self-attention in structure and cell-bbox decoders
-    author: namly
-    """
-
-    def __init__(self, headers, d_model, dropout, structure_window=0, cell_window=0):
-        super(MultiHeadLocalAttention, self).__init__()
-
-        assert d_model % headers == 0
-        self.d_k = int(d_model / headers)
-        self.headers = headers
-        self.linears = clones(nn.Linear(d_model, d_model), 4)
-        self.attn = None
-        self.dropout = nn.Dropout(dropout)
-        self.structure_window = structure_window
-        self.local_attention = LocalAttention(dim=self.d_k, window_size=structure_window, causal=True,
-                                              look_backward=1, look_forward=0, dropout=dropout,
-                                              autopad=True, exact_windowsize=False)
-
-    def forward(self, query, key, value, mask=None):
-        nbatches = query.size(0)
-        # 1) Do all the linear projections in batch from d_model => h x d_k
-        query, key, value = \
-            [l(x).view(nbatches, -1, self.headers, self.d_k).transpose(1, 2)
-             for l,x in zip(self.linears, (query, key, value))]
-
-        # 2) Apply LocalAttention on all the projected vectors in batch
-        if self.structure_window == 0:
-            # mask: [b, l_tgt]
-            # apply global self-attention
-            # change mask for global self-attention
-            tgt_len = mask.size(1)
-            trg_sub_mask = torch.tril(torch.ones((tgt_len, tgt_len), dtype=torch.uint8, device=query.device))
-
-            mask = mask.unsqueeze(1).unsqueeze(3)
-            tgt_mask = mask & trg_sub_mask
-            x, self.attn = self_attention(query, key, value, mask=tgt_mask, dropout=self.dropout)
-        else:
-            # apply local self-attention
-            x = self.local_attention.forward(query, key, value, mask=mask.bool())
-
-        x = x.transpose(1, 2).contiguous().view(nbatches, -1, self.headers * self.d_k)
-        return self.linears[-1](x)
-
-
-class MultiHeadGlobalAttention(nn.Module):
+class MultiHeadAttention(nn.Module):
 
     def __init__(self, headers, d_model, dropout):
-        super(MultiHeadGlobalAttention, self).__init__()
+        super(MultiHeadAttention, self).__init__()
 
         assert d_model % headers == 0
         self.d_k = int(d_model / headers)
@@ -150,8 +102,8 @@ class DecoderLayer(nn.Module):
     def __init__(self, size, self_attn, src_attn, feed_forward, dropout):
         super(DecoderLayer, self).__init__()
         self.size = size
-        self.self_attn = MultiHeadLocalAttention(**self_attn)
-        self.src_attn = MultiHeadGlobalAttention(**src_attn)
+        self.self_attn = MultiHeadAttention(**self_attn)
+        self.src_attn = MultiHeadAttention(**src_attn)
         self.feed_forward = FeedForward(**feed_forward)
         self.sublayer = clones(SubLayerConnection(size, dropout), 3)
 
@@ -161,60 +113,12 @@ class DecoderLayer(nn.Module):
         return self.sublayer[2](x, self.feed_forward)
 
 
-class MultiHeadLocalAttentionCell(nn.Module):
-    """
-    Multi Head Local Self-attention in cell-content decoder
-    author: namly
-    """
-
-    def __init__(self, headers, d_model, dropout, structure_window=0, cell_window=0):
-        super(MultiHeadLocalAttentionCell, self).__init__()
-
-        assert d_model % headers == 0
-        self.d_k = int(d_model / headers)
-        self.headers = headers
-        self.linears = clones(nn.Linear(d_model, d_model), 4)
-        self.attn = None
-        self.dropout = nn.Dropout(dropout)
-        self.cell_window = cell_window
-        self.local_attention = LocalAttention(dim=self.d_k, window_size=cell_window, causal=True,
-                                              look_backward=1, look_forward=0, dropout=dropout,
-                                              autopad=True, exact_windowsize=False)
-
-    def forward(self, query, key, value, mask=None):
-        nbatches = query.size(0)
-        # 1) Do all the linear projections in batch from d_model => h x d_k
-        query, key, value = \
-            [l(x).view(nbatches, -1, self.headers, self.d_k).transpose(1, 2)
-             for l,x in zip(self.linears, (query, key, value))]
-
-        # 2) Apply LocalAttention on all the projected vectors in batch
-        if self.cell_window == 0:
-            # mask: [b, l_tgt]
-            # apply global self-attention
-            # change mask for global self-attention
-            tgt_len = mask.size(1)
-            trg_sub_mask = torch.tril(torch.ones((tgt_len, tgt_len), dtype=torch.uint8, device=query.device))
-
-            mask = mask.unsqueeze(1).unsqueeze(3)
-            tgt_mask = mask & trg_sub_mask
-            x, self.attn = self_attention(query, key, value, mask=tgt_mask, dropout=self.dropout)
-        else:
-            # apply local self-attention
-            x = self.local_attention.forward(query, key, value, mask=mask.bool())
-
-        x = x.transpose(1, 2).contiguous().view(nbatches, -1, self.headers * self.d_k)
-        return self.linears[-1](x)
-
-
-class MultiHeadGlobalAttentionCell(nn.Module):
-    """
-    Multi Head Cross Attention in cell-content decoder (reduce the memory)
-    author: namly
-    """
+class MultiHeadAttentionCell(nn.Module):
+    # MultiHeadAttention in CellContentDecoder
+    # reduce the GPU memory
 
     def __init__(self, headers, d_model, dropout):
-        super(MultiHeadGlobalAttentionCell, self).__init__()
+        super(MultiHeadAttentionCell, self).__init__()
 
         assert d_model % headers == 0
         self.d_k = int(d_model / headers)
@@ -243,14 +147,14 @@ class MultiHeadGlobalAttentionCell(nn.Module):
 class DecoderLayerCell(nn.Module):
     """
     For CellContentDecoder
+    reduce the GPU memory
     Decoder is made of self attention, srouce attention and feed forward.
-    namly
     """
     def __init__(self, size, self_attn, src_attn, feed_forward, dropout):
         super(DecoderLayerCell, self).__init__()
         self.size = size
-        self.self_attn = MultiHeadLocalAttentionCell(**self_attn)
-        self.src_attn = MultiHeadGlobalAttentionCell(**src_attn)
+        self.self_attn = MultiHeadAttention(**self_attn)
+        self.src_attn = MultiHeadAttentionCell(**src_attn)
         self.feed_forward = FeedForward(**feed_forward)
         self.sublayer = clones(SubLayerConnection(size, dropout), 3)
 
@@ -360,11 +264,9 @@ class MasterDecoder(BaseDecoder):
 @DECODERS.register_module()
 class TableMasterDecoder(BaseDecoder):
     """
-    Three decoders: structure decoder, cell-bbox decoder, and cell-content decoder.
+    Split to two transformer header at the last layer.
     Cls_layer is used to structure token classification.
     Bbox_layer is used to regress bbox coord.
-    cell_layer is used to generate cell content.
-    author: namly
     """
     def __init__(self,
                  N,
@@ -404,7 +306,7 @@ class TableMasterDecoder(BaseDecoder):
         self.PAD_CELL = padding_idx_cell
         self.max_length_cell = max_seq_len_cell
         self.cell_input_fc = nn.Linear(2 * d_model, d_model)
-        self.batch_size_cell = 32
+        self.batch_size_cell = 64
         # vaskar
         # batch_size = 4, batch_size_cell = 32       cell 150 batch 4
         # batch_size = 4, batch_size_cell = 64       cell 100 batch 4
@@ -425,27 +327,21 @@ class TableMasterDecoder(BaseDecoder):
         self.PAD = padding_idx
         self.max_length = max_seq_len
 
-    def make_mask_structure(self, src, tgt):
+    def make_mask(self, src, tgt, padding_idx):
         """
-        Make mask for self attention in the structure decoder.
+        Make mask for self attention.
         :param src: [b, c, h, l_src]
         :param tgt: [b, l_tgt]
+        :param padding_idx
         :return:
         """
-        trg_pad_mask = (tgt != self.PAD).byte()
+        trg_pad_mask = (tgt != padding_idx).unsqueeze(1).unsqueeze(3).byte()
 
-        return None, trg_pad_mask
+        tgt_len = tgt.size(1)
+        trg_sub_mask = torch.tril(torch.ones((tgt_len, tgt_len), dtype=torch.uint8, device=src.device))
 
-    def make_mask_cell(self, src, tgt):
-        """
-        Make mask for self attention in the cell content decoder.
-        :param src: [b, c, h, l_src]
-        :param tgt: [b, l_tgt]
-        :return:
-        """
-        trg_pad_mask = (tgt != self.PAD_CELL).byte()
-
-        return None, trg_pad_mask
+        tgt_mask = trg_pad_mask & trg_sub_mask
+        return None, tgt_mask
 
     def decode(self, input, feature, src_mask, input_cell_content, bbox_masks):
         # input: batch_size * self.max_seq_len
@@ -453,7 +349,7 @@ class TableMasterDecoder(BaseDecoder):
         # main process of transformer decoder.
         x = self.embedding(input)
         x = self.positional_encoding(x)
-        _, target_mask = self.make_mask_structure(feature, input)
+        _, target_mask = self.make_mask(feature, input, self.PAD)
 
         # origin transformer layers
         # x: tensor(batch_size, max_seq_len, d_model)
@@ -484,7 +380,7 @@ class TableMasterDecoder(BaseDecoder):
 
             x_cell = self.embedding_cell(input_sample_padded_target)
             x_cell = self.positional_encoding_cell(x_cell)
-            _, cell_target_mask = self.make_mask_cell(feature, input_sample_padded_target)
+            _, cell_target_mask = self.make_mask(feature, input_sample_padded_target, self.PAD_CELL)
 
             # feature
             feature_i = feature[idx_].unsqueeze(0)
@@ -526,7 +422,7 @@ class TableMasterDecoder(BaseDecoder):
         # main process of transformer decoder.
         x = self.embedding(input)
         x = self.positional_encoding(x)
-        _, target_mask = self.make_mask_structure(feature, input)
+        _, target_mask = self.make_mask(feature, input, self.PAD)
 
         # origin transformer layers
         for i, layer in enumerate(self.layers):
@@ -580,7 +476,7 @@ class TableMasterDecoder(BaseDecoder):
                 for i_step in range(self.max_length_cell + 1):
                     x_cell = self.embedding_cell(input_cell)
                     x_cell = self.positional_encoding_cell(x_cell)
-                    _, cell_target_mask = self.make_mask_cell(feature, input_cell)
+                    _, cell_target_mask = self.make_mask(feature, input_cell, self.PAD_CELL)
 
                     # feature
                     feature_i = feature[idx_].unsqueeze(0)
