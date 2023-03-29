@@ -74,7 +74,10 @@ def self_attention(query, key, value, mask=None, dropout=None):
 
 
 class MultiHeadLocalAttention(nn.Module):
-    # Local Self-attention in LongFormer
+    """
+    Multi Head Local Self-attention in structure and cell-bbox decoders
+    author: namly
+    """
 
     def __init__(self, headers, d_model, dropout, structure_window=0, cell_window=0):
         super(MultiHeadLocalAttention, self).__init__()
@@ -159,7 +162,10 @@ class DecoderLayer(nn.Module):
 
 
 class MultiHeadLocalAttentionCell(nn.Module):
-    # Local Self-attention in LongFormer
+    """
+    Multi Head Local Self-attention in cell-content decoder
+    author: namly
+    """
 
     def __init__(self, headers, d_model, dropout, structure_window=0, cell_window=0):
         super(MultiHeadLocalAttentionCell, self).__init__()
@@ -202,9 +208,10 @@ class MultiHeadLocalAttentionCell(nn.Module):
 
 
 class MultiHeadGlobalAttentionCell(nn.Module):
-    # namly
-    # MultiHeadCrossAttention in CellContentDecoder
-    # reduce the memory
+    """
+    Multi Head Cross Attention in cell-content decoder (reduce the memory)
+    author: namly
+    """
 
     def __init__(self, headers, d_model, dropout):
         super(MultiHeadGlobalAttentionCell, self).__init__()
@@ -237,6 +244,7 @@ class DecoderLayerCell(nn.Module):
     """
     For CellContentDecoder
     Decoder is made of self attention, srouce attention and feed forward.
+    namly
     """
     def __init__(self, size, self_attn, src_attn, feed_forward, dropout):
         super(DecoderLayerCell, self).__init__()
@@ -352,9 +360,11 @@ class MasterDecoder(BaseDecoder):
 @DECODERS.register_module()
 class TableMasterDecoder(BaseDecoder):
     """
-    Split to two transformer header at the last layer.
+    Three decoders: structure decoder, cell-bbox decoder, and cell-content decoder.
     Cls_layer is used to structure token classification.
     Bbox_layer is used to regress bbox coord.
+    cell_layer is used to generate cell content.
+    author: namly
     """
     def __init__(self,
                  N,
