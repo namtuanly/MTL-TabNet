@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=0,1 PORT=29500 ./tools/dist_train.sh ./configs/textrecog/master/table_master_local_attn_new_decoder_FinTabNet_alldata_img520_win300_0_tag600_cell150_batch4.py /home2/nam/nam_data/work_dir/1114_TableMASTER_local_attn_new_decoder_FinTabNet_alldata_img520_win300_0_tag600_cell150_batch4/ 2

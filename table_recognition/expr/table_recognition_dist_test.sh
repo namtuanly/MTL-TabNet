@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=0,1 PORT=29504 ./tools/dist_test.sh ./configs/textrecog/master/table_master_ResnetExtract_Ranger_0705_infer.py /home2/nam/nam_data/work_dir/1114_TableMASTER_structure/epoch_17.pth 2 --eval acc
