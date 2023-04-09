@@ -3,11 +3,11 @@ _base_ = [
 ]
 
 
-alphabet_file = '/disks/vaskar/nam/data/mmocr_fintabnet_recognition_0726_train/structure_alphabet.txt'
+alphabet_file = './fintabnet_alphabet/structure_alphabet.txt'
 alphabet_len = len(open(alphabet_file, 'r').readlines())
 max_seq_len = 601
 
-cell_alphabet_file = '/disks/vaskar/nam/data/mmocr_fintabnet_recognition_0726_train/textline_recognition_alphabet.txt'
+cell_alphabet_file = './fintabnet_alphabet/textline_recognition_alphabet.txt'
 cell_alphabet_len = len(open(cell_alphabet_file, 'r').readlines())
 max_seq_len_cell = 150
 
@@ -176,42 +176,6 @@ train1 = dict(
     pipeline=train_pipeline,
     test_mode=False)
 
-train_img_prefix2 = '/disks/strg16-176/nam/data/fintabnet/img_tables/val/'
-train_anno_file2 = '/home2/nam/nam_data/data/mmocr_fintabnet_recognition_0726_val/StructureLabelAddEmptyBbox_val/'
-train2 = dict(
-    type=dataset_type,
-    img_prefix=train_img_prefix2,
-    ann_file=train_anno_file2,
-    loader=dict(
-        type='TableHardDiskLoader',
-        repeat=1,
-        max_seq_len=max_seq_len,
-        parser=dict(
-            type='TableStrParser',
-            keys=['filename', 'text'],
-            keys_idx=[0, 1],
-            separator=' ')),
-    pipeline=train_pipeline,
-    test_mode=False)
-
-train_img_prefix3 = '/disks/strg16-176/nam/data/fintabnet/img_tables/test/'
-train_anno_file3 = '/home2/nam/nam_data/data/mmocr_fintabnet_recognition_0726_test/StructureLabelAddEmptyBbox_test/'
-train3 = dict(
-    type=dataset_type,
-    img_prefix=train_img_prefix3,
-    ann_file=train_anno_file3,
-    loader=dict(
-        type='TableHardDiskLoader',
-        repeat=1,
-        max_seq_len=max_seq_len,
-        parser=dict(
-            type='TableStrParser',
-            keys=['filename', 'text'],
-            keys_idx=[0, 1],
-            separator=' ')),
-    pipeline=train_pipeline,
-    test_mode=False)
-
 valid_img_prefix = '/disks/strg16-176/nam/data/fintabnet/img_tables/val/'
 valid_anno_file1 = '/home2/nam/nam_data/data/mmocr_fintabnet_recognition_0726_val_64/StructureLabelAddEmptyBbox_val/'
 valid = dict(
@@ -253,7 +217,7 @@ test = dict(
 data = dict(
     samples_per_gpu=4,
     workers_per_gpu=2,
-    train=dict(type='ConcatDataset', datasets=[train1, train2, train3]),
+    train=dict(type='ConcatDataset', datasets=[train1]),
     val=dict(type='ConcatDataset', datasets=[valid]),
     test=dict(type='ConcatDataset', datasets=[test], samples_per_gpu=1))
 

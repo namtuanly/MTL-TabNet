@@ -194,8 +194,8 @@ if __name__ == '__main__':
     val_test = sys.argv[4]
 
     cfg = {
-        'structure_master_config': './configs/textrecog/master/table_master_local_attn_new_decoder_FinTabNet_alldata_img520_win300_0_tag600_cell150_batch4.py',        # structure
-        'structure_master_ckpt': '/home2/nam/nam_data/work_dir/1114_TableMASTER_local_attn_new_decoder_FinTabNet_alldata_img520_win300_0_tag600_cell150_batch4/epoch_'
+        'structure_master_config': './configs/textrecog/master/table_master_local_attn_new_decoder_FinTabNet_full_img520_win300_0_tag600_cell150_batch4.py',        # structure
+        'structure_master_ckpt': '/home2/nam/nam_data/work_dir/1114_TableMASTER_local_attn_new_decoder_FinTabNet_full_img520_win300_0_tag600_cell150_batch4/epoch_'
                                  + str(epoch_id) + '.pth',              # structure
 
         'structure_master_result_folder': '/disks/strg16-176/nam/VQAonBD2023/' + val_test + '/' + val_test + '_infer_alldata/predFile/',
