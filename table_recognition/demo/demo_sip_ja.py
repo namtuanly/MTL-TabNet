@@ -16,7 +16,7 @@ import pickle
 import numpy as np
 from tqdm import tqdm
 
-from table_recognition.table_inference import Detect_Inference, Recognition_Inference, End2End, Structure_Recognition
+from table_recognition.table_inference import Structure_Recognition
 import re
 import copy
 from bs4 import BeautifulSoup
@@ -345,15 +345,15 @@ if __name__ == '__main__':
                         help='tablemaster checkpoint file')
     parser.add_argument('--out_dir',
                         type=str, default='/home2/nam/nam_data/work_dir/1114_TableMASTER_new_decoder_ja_v3_cell100_batch4/demo_outputs/', help='Dir to save results')
-    parser.add_argument('--input_file',
-                        type=str, default='jp_table_demo.png', help='Dir to save results')
+    parser.add_argument('--input_folder',
+                        type=str, default='table_img/', help='Dir to save results')
     args = parser.parse_args()
 
     # main process
     import sys
     import codecs
     sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
-    root_dir = args.out_dir + args.input_file + '/'
+    root_dir = args.out_dir
 
     tablemaster_checkpoint = '/home2/nam/nam_data/work_dir/1114_TableMASTER_new_decoder_ja_v3_cell100_batch4/' \
                              + args.checkpoint + '.pth'
@@ -362,7 +362,7 @@ if __name__ == '__main__':
     os.makedirs(save_visual_dir, exist_ok=True)
     tablemaster_inference = Structure_Recognition(args.tablemaster_config, tablemaster_checkpoint)
 
-    for subdir, dirs, files in os.walk(root_dir + 'table_img/'):
+    for subdir, dirs, files in os.walk(root_dir + args.input_folder):
         for file_ in files:
             # print os.path.join(subdir, file)
             filepath = subdir + os.sep + file_
