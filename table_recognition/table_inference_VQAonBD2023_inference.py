@@ -17,6 +17,7 @@ import cv2
 import numpy as np
 from PIL import Image
 import os
+import sys
 
 IMAGE_EXT = "jpg"
 
@@ -488,8 +489,8 @@ class Runner:
 
 if __name__ == '__main__':
     # Runner
-    chunk_nums = 1
-    chunk_id = 0
+    chunk_nums = int(sys.argv[1])
+    chunk_id = int(sys.argv[2])
 
     cfg = {
         # config file
