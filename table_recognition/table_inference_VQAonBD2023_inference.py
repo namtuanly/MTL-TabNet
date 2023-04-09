@@ -384,7 +384,6 @@ class Structure_Recognition(Inference):
 
             img = cv2.resize(img, (w, h), interpolation=cv2.INTER_AREA)
             cv2.imwrite(new_path, img)
-            print(file_path)
         except:
             print(file_path)
             return
@@ -394,7 +393,7 @@ class Structure_Recognition(Inference):
         file_name = os.path.basename(file_path)
         result = model_inference(self.model, [img], batch_mode=True)
         result = self.result_format(result, file_path)
-        result_dict = {file_name:result}
+        result_dict = (file_name, result)
         return result, result_dict
 
 

@@ -3,11 +3,11 @@ _base_ = [
 ]
 
 
-alphabet_file = './fintabnet_alphabet/structure_alphabet.txt'
+alphabet_file = './configs/textrecog/master/fintabnet_alphabet/structure_alphabet.txt'
 alphabet_len = len(open(alphabet_file, 'r').readlines())
 max_seq_len = 601
 
-cell_alphabet_file = './fintabnet_alphabet/textline_recognition_alphabet.txt'
+cell_alphabet_file = './configs/textrecog/master/fintabnet_alphabet/textline_recognition_alphabet.txt'
 cell_alphabet_len = len(open(cell_alphabet_file, 'r').readlines())
 max_seq_len_cell = 150
 
