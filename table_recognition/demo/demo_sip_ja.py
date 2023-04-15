@@ -355,6 +355,7 @@ if __name__ == '__main__':
     sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
     root_dir = args.out_dir
 
+    # path of checkpoint file
     tablemaster_checkpoint = '/home2/nam/nam_data/work_dir/1114_TableMASTER_new_decoder_ja_v3_cell100_batch4/' \
                              + args.checkpoint + '.pth'
 
