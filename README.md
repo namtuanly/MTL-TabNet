@@ -244,6 +244,11 @@ This project is licensed under the MIT License. See LICENSE for more details.
 ```
 
 
+<!-- Contact -->
+## Contact
+Nam Ly (namly@nii.ac.jp, namlytuan@gmail.com)<br>
+Atsuhiro Takasu (takasu@nii.ac.jp)
+
 
 <!-- ACKNOWLEDGEMENTS -->
 
