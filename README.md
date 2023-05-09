@@ -217,6 +217,13 @@ To get final results.
 
 Pretrain model can be download in [PubTabNet](https://drive.google.com/file/d/16RlU_1373OP73AWl_L8FY46wTrqiycCi/view?usp=sharing) and [FinTabNet](https://drive.google.com/file/d/1aWo0sCyhINroRTteR4mO433lmewlWFh4/view?usp=sharing)
 
+<!-- Demo -->
+## Demo
+To run demo for recognizing a table image (you can change the input file and checkpoint file in demo.py):
+   ```shell
+   python ./table_recognition/demo/demo.py
+   ```
+
 <!-- LICENSE -->
 
 ## License
