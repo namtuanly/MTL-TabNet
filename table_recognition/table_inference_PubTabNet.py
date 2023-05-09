@@ -194,16 +194,13 @@ if __name__ == '__main__':
         test_folder = '/home2/nam/nam_data/pubtabnet/icdar-task-b/final_eval/'
 
     cfg = {
-        'structure_master_config': './configs/textrecog/master/table_master_local_attn_new_decoder_img520_win200_0_tag600_cell150_batch4.py',        # structure
-        'structure_master_ckpt': '/home2/nam/nam_data/work_dir/1114_TableMASTER_local_attn_new_decoder_img520_win200_0_tag600_cell150_batch4/step12_15/epoch_'
+        'structure_master_config': './configs/textrecog/master/table_master_ResnetExtract_Ranger_0705_cell150_batch4.py',        # structure
+        'structure_master_ckpt': '/home2/nam/nam_data/work_dir/1114_TableMASTER_structure_seq500_cell150_batch4/step_12_17/epoch_'
                                  + str(epoch_id) + '.pth',              # structure
 
-        # 'structure_master_result_folder': '/home2/nam/nam_data/work_dir/1114_TableMASTER_local_attn_new_decoder_img520_win200_0_tag600_cell150_batch4/step12_15/structure_'
-        #                                   + val_test + '_result_epoch_' + str(epoch_id),         # structure
-        # 'test_folder': test_folder,                           # structure
-
-        'structure_master_result_folder': '/disks/strg16-176/nam/VQAonBD2023/test_20_PubTab_epoch20/',
-        'test_folder': '/disks/strg16-176/nam/VQAonBD2023/test_20/',
+        'structure_master_result_folder': '/home2/nam/nam_data/work_dir/1114_TableMASTER_structure_seq500_cell150_batch4/step_12_17/_structure_'
+                                          + val_test + '_result_epoch_' + str(epoch_id),         # structure
+        'test_folder': test_folder,                           # structure
 
         'chunks_nums': chunk_nums
     }

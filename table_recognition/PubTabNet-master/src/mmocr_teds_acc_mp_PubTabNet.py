@@ -367,9 +367,7 @@ if __name__ == "__main__":
     t_start = time.time()
     pool = Pool(64)
     start_time = time.time()
-    # predFile = '/home2/nam/nam_data/work_dir/1114_TableMASTER_local_attn_new_decoder_tag600_cell150_batch4/autopad_structure_val_result_epoch_' + str(epoch_id)
-    # predFile = '/home2/nam/nam_data/work_dir/1114_TableMASTER_local_attn_new_decoder_win100_50_tag500_cell150_batch4/step12_17/autopad_structure_val_result_epoch_' + str(epoch_id)
-    predFile = '/home2/nam/nam_data/work_dir/1114_TableMASTER_local_attn_new_decoder_img520_win200_0_tag600_cell150_batch4/step12_15/structure_val_result_epoch_' + str(epoch_id)
+    predFile = '/home2/nam/nam_data/work_dir/1114_TableMASTER_structure_seq500_cell150_batch4/step_12_17/_structure_val_result_epoch_' + str(epoch_id)
     gtJsonFile = '/home2/nam/nam_data/pubtabnet/gtVal_full.json'  #gtVal_full.json, gtVal_struct_min250.json, gtVal_struct500
 
     # pubtabnet_dir = '/home2/nam/pubtabnet/pubtabnet/val_min250/'
@@ -381,15 +379,6 @@ if __name__ == "__main__":
 
     with open(gtJsonFile, 'r') as f:
         gtValDict = json.load(f)
-
-    # assert len(predDict) == len(gtValDict) == 9115
-
-    # # cut 10 to debug
-    # file_names = [p for p in predDict.keys()][:10]
-    # cut_predDict = dict()
-    # for file_name in file_names:
-    #     cut_predDict.setdefault(file_name, predDict[file_name])
-    # predDict = cut_predDict
 
     scores_simple = []
     scores_complex = []
@@ -448,19 +437,6 @@ if __name__ == "__main__":
         f.write('TEDS cost time: {}s'.format(time.time()-start_time) + '\n')
         f.write('Number sample: {}'.format(len(cal_scores)) + '\n')
 
-    # print("Save cache for analysis.")
-    # save_folder = '/disks/strg16-176/nam/work_dir/ted_caches_epoch_17'
-    # for file_name in caches.keys():
-    #     info = caches[file_name]
-    #     if info['score']._value < 1.0:
-    #         f = open(os.path.join(save_folder, file_name.replace('.png', '.txt')), 'w')
-    #         f.write(file_name+'\n'+'\n')
-    #         f.write('Score:'+'\n')
-    #         f.write(str(info['score']._value)+'\n'+'\n')
-    #         f.write('Pred:'+'\n')
-    #         f.write(info['pred']+'\n'+'\n')
-    #         f.write('Gt:' + '\n')
-    #         f.write(info['gt']+'\n'+'\n')
 
 
 

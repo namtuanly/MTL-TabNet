@@ -69,9 +69,8 @@ The proposed model consists of one shared encoder, one shared decoder, and three
 
 ### Prerequisites
 
-+ Competition dataset **PubTabNet**, click [here](https://developer.ibm.com/exchanges/data/all/pubtabnet/) for downloading.
-+ About **PubTabNet**, check their [github](https://github.com/ibm-aur-nlp/PubTabNet) and [paper](https://arxiv.org/abs/1911.10683).
-
+* About **PubTabNet**, click [here](https://developer.ibm.com/exchanges/data/all/pubtabnet/) for downloading, and check their [github](https://github.com/ibm-aur-nlp/PubTabNet) and [paper](https://arxiv.org/abs/1911.10683) for the details.
+* About **FinTabNet**, click [here](https://developer.ibm.com/data/fintabnet/) for downloading.
 * About the metric **TEDS**, see [github](https://github.com/ibm-aur-nlp/PubTabNet/tree/master/src) 
 
 ### Installation
@@ -216,7 +215,7 @@ To get final results.
 
 ## Pretrained Model
 
-
+Pretrain model can be download in [PubTabNet](https://drive.google.com/file/d/16RlU_1373OP73AWl_L8FY46wTrqiycCi/view?usp=sharing) and [FinTabNet](https://drive.google.com/file/d/1aWo0sCyhINroRTteR4mO433lmewlWFh4/view?usp=sharing)
 
 <!-- LICENSE -->
 

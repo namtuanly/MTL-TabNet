@@ -10,14 +10,14 @@ if __name__ == "__main__":
     #
     # time.sleep(20)
 
-    subprocess.call("CUDA_VISIBLE_DEVICES=2 python3 -u ./table_recognition/table_inference_FinTabNet_VQAonBD2023.py 8 0 20 test &"
-                    "CUDA_VISIBLE_DEVICES=2 python3 -u ./table_recognition/table_inference_FinTabNet_VQAonBD2023.py 8 1 20 test &"
-                    "CUDA_VISIBLE_DEVICES=3 python3 -u ./table_recognition/table_inference_FinTabNet_VQAonBD2023.py 8 2 20 test &"
-                    "CUDA_VISIBLE_DEVICES=3 python3 -u ./table_recognition/table_inference_FinTabNet_VQAonBD2023.py 8 3 20 test &"
-                    "CUDA_VISIBLE_DEVICES=0 python3 -u ./table_recognition/table_inference_FinTabNet_VQAonBD2023.py 8 4 20 test &"
-                    "CUDA_VISIBLE_DEVICES=0 python3 -u ./table_recognition/table_inference_FinTabNet_VQAonBD2023.py 8 5 20 test &"
-                    "CUDA_VISIBLE_DEVICES=1 python3 -u ./table_recognition/table_inference_FinTabNet_VQAonBD2023.py 8 6 20 test &"
-                    "CUDA_VISIBLE_DEVICES=1 python3 -u ./table_recognition/table_inference_FinTabNet_VQAonBD2023.py 8 7 20 test", shell=True)
+    subprocess.call("CUDA_VISIBLE_DEVICES=2 python3 -u ./table_recognition/table_inference_FinTabNet.py 8 0 17 val &"
+                    "CUDA_VISIBLE_DEVICES=2 python3 -u ./table_recognition/table_inference_FinTabNet.py 8 1 17 val &"
+                    "CUDA_VISIBLE_DEVICES=3 python3 -u ./table_recognition/table_inference_FinTabNet.py 8 2 17 val &"
+                    "CUDA_VISIBLE_DEVICES=3 python3 -u ./table_recognition/table_inference_FinTabNet.py 8 3 17 val &"
+                    "CUDA_VISIBLE_DEVICES=0 python3 -u ./table_recognition/table_inference_FinTabNet.py 8 4 17 val &"
+                    "CUDA_VISIBLE_DEVICES=0 python3 -u ./table_recognition/table_inference_FinTabNet.py 8 5 17 val &"
+                    "CUDA_VISIBLE_DEVICES=1 python3 -u ./table_recognition/table_inference_FinTabNet.py 8 6 17 val &"
+                    "CUDA_VISIBLE_DEVICES=1 python3 -u ./table_recognition/table_inference_FinTabNet.py 8 7 17 val", shell=True)
 
     time.sleep(60)
 

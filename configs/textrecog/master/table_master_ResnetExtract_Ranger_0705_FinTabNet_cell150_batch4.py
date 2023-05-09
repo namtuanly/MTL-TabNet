@@ -3,11 +3,11 @@ _base_ = [
 ]
 
 
-alphabet_file = '/disks/vaskar/nam/data/mmocr_fintabnet_recognition_0726_train/structure_alphabet.txt'
+alphabet_file = './tools/data/alphabet/fintabnet/structure_alphabet.txt'
 alphabet_len = len(open(alphabet_file, 'r').readlines())
 max_seq_len = 500
 
-cell_alphabet_file = '/disks/vaskar/nam/data/mmocr_fintabnet_recognition_0726_train/textline_recognition_alphabet.txt'
+cell_alphabet_file = './tools/data/alphabet/fintabnet/textline_recognition_alphabet.txt'
 cell_alphabet_len = len(open(cell_alphabet_file, 'r').readlines())
 max_seq_len_cell = 150
 

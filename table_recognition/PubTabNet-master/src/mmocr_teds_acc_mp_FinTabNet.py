@@ -348,12 +348,11 @@ if __name__ == "__main__":
     t_start = time.time()
     pool = Pool(64)
     start_time = time.time()
-    # predFile = '/home2/nam/nam_data/work_dir/1114_TableMASTER_local_attn_new_decoder_FinTabNet_img520_win300_0_tag600_cell150_batch4/structure_val_result_epoch_' + str(epoch_id)
-    predFile = '/disks/strg16-176/nam/VQAonBD2023/' + val_test + '/' + val_test + '_infer/predFile/'
+    predFile = '/home2/nam/nam_data/work_dir/1114_TableMASTER_FinTabNet_seq500_cell150_batch4/_structure_val_result_epoch_' + str(epoch_id)
 
-    gtJsonFile = '/disks/strg16-176/nam/VQAonBD2023/VQAonBD2023_datasets/gt_FinTabNet_val.json' # '/disks/strg16-176/nam/data/fintabnet/img_tables/gtVal_FinTabNet_val.json'
+    gtJsonFile = '/disks/strg16-176/nam/data/fintabnet/img_tables/gtVal_FinTabNet_val.json'
 
-    fintabnet_dir = '/disks/strg16-176/nam/VQAonBD2023/' + val_test + '/' + val_test + '_pp/'
+    fintabnet_dir = '/disks/strg16-176/nam/data/fintabnet/img_tables/' + val_test + '/'
 
     # Initialize TEDS object
     teds = TEDS(structure_only=False, n_jobs=1) #, ignore_nodes='b')
@@ -389,7 +388,7 @@ if __name__ == "__main__":
         caches.setdefault(file_name, tmp)
 
         # # visualize bboxes
-        visual_pred_bboxes(context['bbox'], file_name, predFile + '/visual_pred_bboxes/', fintabnet_dir)
+        # visual_pred_bboxes(context['bbox'], file_name, predFile + '/visual_pred_bboxes/', fintabnet_dir)
 
     pool.close()
     pool.join() # 进程池中进程执行完毕后再关闭，如果注释，那么程序直接关闭。
@@ -420,56 +419,6 @@ if __name__ == "__main__":
         f.write('TEDS cost time: {}s'.format(time.time()-start_time) + '\n')
         f.write('Number sample: {}'.format(len(cal_scores)) + '\n')
 
-    root_save_dir = predFile
-
-    print("Save cache for analysis.")
-    save_folder = root_save_dir + '/ted_caches_0dot6'
-    if not os.path.exists(save_folder):
-        os.makedirs(save_folder)
-
-    save_folder_2 = root_save_dir + '/ted_caches_0dot8'
-    if not os.path.exists(save_folder_2):
-        os.makedirs(save_folder_2)
-
-    save_folder_3 = root_save_dir + '/ted_caches_1dot0'
-    if not os.path.exists(save_folder_3):
-        os.makedirs(save_folder_3)
-
-    save_folder_4 = root_save_dir + '/ted_caches_0dot9'
-    if not os.path.exists(save_folder_4):
-        os.makedirs(save_folder_4)
-
-    save_folder_5 = root_save_dir + '/ted_caches_0dot9_1dot0'
-    if not os.path.exists(save_folder_5):
-        os.makedirs(save_folder_5)
-
-    for file_name in caches.keys():
-        info = caches[file_name]
-        if info['score']._value < 0.6:
-            fave_f = save_folder
-        elif info['score']._value < 0.8:
-            fave_f = save_folder_2
-        elif info['score']._value < 0.9:
-            fave_f = save_folder_4
-        elif info['score']._value == 1.0:
-            fave_f = save_folder_3
-        else:
-            fave_f = save_folder_5
-
-        f = open(os.path.join(fave_f, file_name.replace('.png', '.txt')), 'w')
-        shutil.copy(fintabnet_dir + file_name, fave_f)
-        shutil.copy(predFile + '/visual_pred_bboxes/' + '{}_pred_bbox.png'.format(file_name.split('.')[0]), fave_f)
-
-        # f.write(file_name+'\n'+'\n')
-        # f.write('Score:'+'\n')
-        # f.write(str(info['score']._value)+'\n'+'\n')
-        f.write('Pred:'+'\n')
-        f.write(info['pred']+'\n'+'\n')
-        f.write('Gt:' + '\n')
-        f.write(info['gt']+'\n'+'\n')
-
-        # f.write(info['pred'])
-        f.close()
 
 
 
