@@ -88,7 +88,7 @@ The proposed model consists of one shared encoder, one shared decoder, and three
 
    ```sh
    # install mmocr
-   cd {Path to TableMASTER_mmocr}
+   cd {Path to MTL-TabNet}
    pip install -v -e .
    ```
 
