@@ -70,7 +70,7 @@ The proposed model consists of one shared encoder, one shared decoder, and three
 ### Prerequisites
 
 * About **PubTabNet**, click [here](https://developer.ibm.com/exchanges/data/all/pubtabnet/) for downloading, and check their [github](https://github.com/ibm-aur-nlp/PubTabNet) and [paper](https://arxiv.org/abs/1911.10683) for the details.
-* About **FinTabNet**, click [here](https://developer.ibm.com/data/fintabnet/) for downloading the dataset and use [extract_table_images_FinTabNet.py]() to extract table images and the annotation file (like PubTabNet).
+* About **FinTabNet**, click [here](https://developer.ibm.com/data/fintabnet/) for downloading the dataset and use [extract_table_images_FinTabNet.py](https://github.com/namtuanly/MTL-TabNet/blob/main/tools/data/fintabnet/extract_table_images_FinTabNet.py) to extract table images and the annotation file (like PubTabNet).
 * About the metric **TEDS**, see [github](https://github.com/ibm-aur-nlp/PubTabNet/tree/master/src) 
 
 ### Installation
