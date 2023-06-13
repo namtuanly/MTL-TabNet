@@ -74,8 +74,18 @@ The proposed model consists of one shared encoder, one shared decoder, and three
 * About the metric **TEDS**, see [github](https://github.com/ibm-aur-nlp/PubTabNet/tree/master/src) 
 
 ### Installation
+0. Build a conda environment in Anaconda for MTL-TabNet (Optional).
+   ```sh
+   # Create an environment with a Python version of 3.8.
+   conda create -n myenv python=3.8
+   conda activate myenv
+   # Install pytorch 1.9.0 with CUDA 11.1.
+   pip install torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html
+   # Install cudnn if necessary.
+   conda install cudnn -c conda-forge
+   ```
 
-1. Install mmdetection. click [here](https://github.com/open-mmlab/mmdetection/blob/v2.11.0/docs/get_started.md) for details.
+2. Install mmdetection. click [here](https://github.com/open-mmlab/mmdetection/blob/v2.11.0/docs/get_started.md) for details.
    
    ```sh
    # We embed mmdetection-2.11.0 source code into this project.
@@ -84,7 +94,7 @@ The proposed model consists of one shared encoder, one shared decoder, and three
    pip install -v -e .
    ```
    
-2. Install mmocr. click [here](https://github.com/open-mmlab/mmocr/blob/main/docs/install.md) for details.
+3. Install mmocr. click [here](https://github.com/open-mmlab/mmocr/blob/main/docs/install.md) for details.
 
    ```sh
    # install mmocr
@@ -92,13 +102,13 @@ The proposed model consists of one shared encoder, one shared decoder, and three
    pip install -v -e .
    ```
 
-3. Install mmcv-full-1.3.4. click [here](https://github.com/open-mmlab/mmcv) for details.
+4. Install mmcv-full-1.3.4. click [here](https://github.com/open-mmlab/mmcv) for details.
 
    ```sh
    pip install mmcv-full=={mmcv_version} -f https://download.openmmlab.com/mmcv/dist/{cu_version}/{torch_version}/index.html
    
-   # install mmcv-full-1.3.4 with torch version 1.8.0 cuda_version 10.2
-   pip install mmcv-full==1.3.4 -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html
+   # install mmcv-full-1.3.4 with torch version 1.9.0 cuda_version 11.1
+   pip install mmcv-full==1.3.4 -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.9.0/index.html
    ```
 
 
