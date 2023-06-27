@@ -113,6 +113,57 @@ class DecoderLayer(nn.Module):
         return self.sublayer[2](x, self.feed_forward)
 
 
+class MultiHeadAttentionCell(nn.Module):
+    # MultiHeadAttention in CellContentDecoder
+    # reduce the GPU memory
+
+    def __init__(self, headers, d_model, dropout):
+        super(MultiHeadAttentionCell, self).__init__()
+
+        assert d_model % headers == 0
+        self.d_k = int(d_model / headers)
+        self.headers = headers
+        self.linears = clones(nn.Linear(d_model, d_model), 4)
+        self.attn = None
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, query, key, value, mask=None):
+        nbatches = query.size(0)
+        # 1) Do all the linear projections in batch from d_model => h x d_k
+        query, key, value = \
+            [l(x) for l,x in zip(self.linears, (query, key, value))]
+
+        query = query.view(nbatches, -1, self.headers, self.d_k).transpose(1, 2)
+        # print(key.size())
+        key = key.contiguous().view(1, -1, self.headers, self.d_k).transpose(1, 2)
+        value = value.contiguous().view(1, -1, self.headers, self.d_k).transpose(1, 2)
+
+        # 2) Apply attention on all the projected vectors in batch
+        x, self.attn = self_attention(query, key, value, mask=mask, dropout=self.dropout)
+        x = x.transpose(1, 2).contiguous().view(nbatches, -1, self.headers * self.d_k)
+        return self.linears[-1](x)
+
+
+class DecoderLayerCell(nn.Module):
+    """
+    For CellContentDecoder
+    reduce the GPU memory
+    Decoder is made of self attention, srouce attention and feed forward.
+    """
+    def __init__(self, size, self_attn, src_attn, feed_forward, dropout):
+        super(DecoderLayerCell, self).__init__()
+        self.size = size
+        self.self_attn = MultiHeadAttention(**self_attn)
+        self.src_attn = MultiHeadAttentionCell(**src_attn)
+        self.feed_forward = FeedForward(**feed_forward)
+        self.sublayer = clones(SubLayerConnection(size, dropout), 3)
+
+    def forward(self, x, feature, src_mask, tgt_mask):
+        x = self.sublayer[0](x, lambda x: self.self_attn(x, x, x, tgt_mask))
+        x = self.sublayer[1](x, lambda x: self.src_attn(x, feature, feature, src_mask))
+        return self.sublayer[2](x, self.feed_forward)
+
+
 @DECODERS.register_module()
 class MasterDecoder(BaseDecoder):
 
@@ -225,9 +276,11 @@ class TableMasterDecoder(BaseDecoder):
                  num_classes_cell,  # number classes in cell content
                  start_idx,
                  padding_idx,
+                 end_idx,
                  max_seq_len,
                  start_idx_cell,
                  padding_idx_cell,
+                 end_idx_cell,
                  max_seq_len_cell,
                  idx_tag_cell
                  ):
@@ -235,7 +288,7 @@ class TableMasterDecoder(BaseDecoder):
         self.layers = clones(DecoderLayer(**decoder), N-1)
         self.cls_layer = clones(DecoderLayer(**decoder), 1)
         self.bbox_layer = clones(DecoderLayer(**decoder), 1)
-        self.cell_layer = clones(DecoderLayer(**decoder), 1)          # cell content classification
+        self.cell_layer = clones(DecoderLayerCell(**decoder), 1)          # cell content classification
         self.cls_fc = nn.Linear(d_model, num_classes)
         self.bbox_fc = nn.Sequential(
             nn.Linear(d_model, 4),
@@ -252,10 +305,11 @@ class TableMasterDecoder(BaseDecoder):
         self.positional_encoding_cell = PositionalEncoding(d_model=d_model)
 
         self.SOS_CELL = start_idx_cell
+        self.EOS_CELL = end_idx_cell
         self.PAD_CELL = padding_idx_cell
         self.max_length_cell = max_seq_len_cell
         self.cell_input_fc = nn.Linear(2 * d_model, d_model)
-        self.batch_size_cell = 32
+        self.batch_size_cell = 64
         # vaskar
         # batch_size = 4, batch_size_cell = 32       cell 150 batch 4
         # batch_size = 4, batch_size_cell = 64       cell 100 batch 4
@@ -273,6 +327,7 @@ class TableMasterDecoder(BaseDecoder):
         # print(num_classes_cell)
 
         self.SOS = start_idx
+        self.EOS = end_idx
         self.PAD = padding_idx
         self.max_length = max_seq_len
 
@@ -333,7 +388,7 @@ class TableMasterDecoder(BaseDecoder):
 
             # feature
             feature_i = feature[idx_].unsqueeze(0)
-            feature_i = feature_i.expand(input_sample_padded_target.size(0), -1, -1)
+            # feature_i = feature_i.expand(1, -1, -1)
 
             # x from origin transformer layers
             # x: tensor(batch_size, max_seq_len, d_model)
@@ -351,7 +406,7 @@ class TableMasterDecoder(BaseDecoder):
                     end_i = input_sample_padded_target.size(0)
 
                 for layer in self.cell_layer:
-                    cell_x_batch = layer(x_cell_i[start_i:end_i], feature_i[start_i:end_i], None,
+                    cell_x_batch = layer(x_cell_i[start_i:end_i], feature_i, None,
                                          cell_target_mask[start_i:end_i])
                 cell_x_batch = self.norm(cell_x_batch)
 
@@ -421,6 +476,11 @@ class TableMasterDecoder(BaseDecoder):
                 SOS = SOS.unsqueeze(1)
                 input_cell = SOS     # number_cell * 1
 
+                # define the batch of EOS
+                EOS_CELL = torch.zeros(x_i.shape[0]).long().to(device)
+                EOS_CELL[:] = self.EOS_CELL
+                EOS_CELL = EOS_CELL.unsqueeze(1)
+
                 # decoder each step of cell content
                 for i_step in range(self.max_length_cell + 1):
                     x_cell = self.embedding_cell(input_cell)
@@ -429,7 +489,7 @@ class TableMasterDecoder(BaseDecoder):
 
                     # feature
                     feature_i = feature[idx_].unsqueeze(0)
-                    feature_i = feature_i.expand(input_cell.size(0), -1, -1)
+                    # feature_i = feature_i.expand(1, -1, -1)
 
                     # concat x_i from origin transformer layers and x_cell from input of cell_decoder
                     x_i_step = x_i.expand(-1, i_step + 1, -1)  # number_cell * (i_step + 1) * d_model
@@ -444,7 +504,7 @@ class TableMasterDecoder(BaseDecoder):
                             end_i = input_cell.size(0)
 
                         for layer in self.cell_layer:
-                            cell_x_batch = layer(x_cell_i[start_i:end_i], feature_i[start_i:end_i], None,
+                            cell_x_batch = layer(x_cell_i[start_i:end_i], feature_i, None,
                                                  cell_target_mask[start_i:end_i])
                         cell_x_batch = self.norm(cell_x_batch)
 
@@ -458,7 +518,12 @@ class TableMasterDecoder(BaseDecoder):
                     output_cell = out_cell
                     prob_cell = F.softmax(out_cell, dim=-1)
                     _, next_word = torch.max(prob_cell, dim=-1)
-                    input_cell = torch.cat([input_cell, next_word[:, -1].unsqueeze(-1)], dim=1)
+
+                    # if output of this time step is EOS_CELL then finish the decoding process
+                    if torch.equal(next_word[:, -1].unsqueeze(-1), EOS_CELL):
+                        break
+                    else:
+                        input_cell = torch.cat([input_cell, next_word[:, -1].unsqueeze(-1)], dim=1)
 
                 # FC and append to batch_size
                 cell_x_out.append(output_cell)
@@ -466,6 +531,12 @@ class TableMasterDecoder(BaseDecoder):
         return tag_x_out, self.bbox_fc(bbox_x), cell_x_out
 
     def greedy_forward(self, SOS, feature, mask):
+        # define the batch of EOS
+        batch_size = SOS.shape[0]
+        EOS = torch.zeros(batch_size).long().to(feature.device)
+        EOS[:] = self.EOS
+        EOS = EOS.unsqueeze(1)
+
         input = SOS
         output = None
         # author: namly
@@ -479,7 +550,14 @@ class TableMasterDecoder(BaseDecoder):
             output = out
             prob = F.softmax(out, dim=-1)
             _, next_word = torch.max(prob, dim=-1)
-            input = torch.cat([input, next_word[:, -1].unsqueeze(-1)], dim=1)
+
+            # if output of this time step is EOS then finish the decoding process
+            if torch.equal(next_word[:, -1].unsqueeze(-1), EOS):
+                out, bbox_output, cell_output = self.decode_test(input, feature, None, True)
+                output = out
+                break
+            else:
+                input = torch.cat([input, next_word[:, -1].unsqueeze(-1)], dim=1)
         return output, bbox_output, cell_output
 
     def forward_train(self, feat, out_enc, targets_dict, img_metas=None):

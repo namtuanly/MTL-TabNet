@@ -225,9 +225,11 @@ class TableMasterDecoder(BaseDecoder):
                  num_classes_cell,  # number classes in cell content
                  start_idx,
                  padding_idx,
+                 end_idx,
                  max_seq_len,
                  start_idx_cell,
                  padding_idx_cell,
+                 end_idx_cell,
                  max_seq_len_cell,
                  idx_tag_cell
                  ):
@@ -252,6 +254,7 @@ class TableMasterDecoder(BaseDecoder):
         self.positional_encoding_cell = PositionalEncoding(d_model=d_model)
 
         self.SOS_CELL = start_idx_cell
+        self.EOS_CELL = end_idx_cell
         self.PAD_CELL = padding_idx_cell
         self.max_length_cell = max_seq_len_cell
         self.cell_input_fc = nn.Linear(2 * d_model, d_model)
@@ -273,6 +276,7 @@ class TableMasterDecoder(BaseDecoder):
         # print(num_classes_cell)
 
         self.SOS = start_idx
+        self.EOS = end_idx
         self.PAD = padding_idx
         self.max_length = max_seq_len
 
@@ -421,6 +425,11 @@ class TableMasterDecoder(BaseDecoder):
                 SOS = SOS.unsqueeze(1)
                 input_cell = SOS     # number_cell * 1
 
+                # define the batch of EOS
+                EOS_CELL = torch.zeros(x_i.shape[0]).long().to(device)
+                EOS_CELL[:] = self.EOS_CELL
+                EOS_CELL = EOS_CELL.unsqueeze(1)
+
                 # decoder each step of cell content
                 for i_step in range(self.max_length_cell + 1):
                     x_cell = self.embedding_cell(input_cell)
@@ -458,7 +467,12 @@ class TableMasterDecoder(BaseDecoder):
                     output_cell = out_cell
                     prob_cell = F.softmax(out_cell, dim=-1)
                     _, next_word = torch.max(prob_cell, dim=-1)
-                    input_cell = torch.cat([input_cell, next_word[:, -1].unsqueeze(-1)], dim=1)
+
+                    # if output of this time step is EOS_CELL then finish the decoding process
+                    if torch.equal(next_word[:, -1].unsqueeze(-1), EOS_CELL):
+                        break
+                    else:
+                        input_cell = torch.cat([input_cell, next_word[:, -1].unsqueeze(-1)], dim=1)
 
                 # FC and append to batch_size
                 cell_x_out.append(output_cell)
@@ -466,6 +480,12 @@ class TableMasterDecoder(BaseDecoder):
         return tag_x_out, self.bbox_fc(bbox_x), cell_x_out
 
     def greedy_forward(self, SOS, feature, mask):
+        # define the batch of EOS
+        batch_size = SOS.shape[0]
+        EOS = torch.zeros(batch_size).long().to(feature.device)
+        EOS[:] = self.EOS
+        EOS = EOS.unsqueeze(1)
+
         input = SOS
         output = None
         # author: namly
@@ -479,7 +499,14 @@ class TableMasterDecoder(BaseDecoder):
             output = out
             prob = F.softmax(out, dim=-1)
             _, next_word = torch.max(prob, dim=-1)
-            input = torch.cat([input, next_word[:, -1].unsqueeze(-1)], dim=1)
+
+            # if output of this time step is EOS then finish the decoding process
+            if torch.equal(next_word[:, -1].unsqueeze(-1), EOS):
+                out, bbox_output, cell_output = self.decode_test(input, feature, None, True)
+                output = out
+                break
+            else:
+                input = torch.cat([input, next_word[:, -1].unsqueeze(-1)], dim=1)
         return output, bbox_output, cell_output
 
     def forward_train(self, feat, out_enc, targets_dict, img_metas=None):

@@ -44,12 +44,14 @@ class EncodeDecodeRecognizer(BaseRecognizer):
         assert decoder is not None
         decoder.update(num_classes=self.label_convertor.num_classes())
         decoder.update(start_idx=self.label_convertor.start_idx)
+        decoder.update(end_idx=self.label_convertor.end_idx)
         decoder.update(padding_idx=self.label_convertor.padding_idx)
         decoder.update(max_seq_len=max_seq_len)
         # author: namly
         # update parameter for the cell content decoder
         decoder.update(num_classes_cell=self.label_convertor.num_classes_cell())
         decoder.update(start_idx_cell=self.label_convertor.start_idx_cell)
+        decoder.update(end_idx_cell=self.label_convertor.end_idx_cell)
         decoder.update(padding_idx_cell=self.label_convertor.padding_idx_cell)
         decoder.update(max_seq_len_cell=self.label_convertor.max_seq_len_cell)
         decoder.update(idx_tag_cell=self.label_convertor.idx_tag_cell())

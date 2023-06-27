@@ -1,5 +1,12 @@
   <h1 align="left">MTL-TabNet: Multi-task Learning based Model for Image-based Table Recognition</h1>
 
+<!-- New -->
+
+## New
+
++ 2023/05: Release the pretrained model on [PubTabNet]() and [FinTabNet]().
++ 2023/06: Speed up the inference time (by improving the decoding process) and reduce the memory consumption of the model.
+
 
 <!-- TABLE OF CONTENTS -->
 
@@ -225,7 +232,8 @@ To get final results.
 
 ## Pretrained Model
 
-Pretrain model can be download in [PubTabNet](https://drive.google.com/file/d/16RlU_1373OP73AWl_L8FY46wTrqiycCi/view?usp=sharing) and [FinTabNet](https://drive.google.com/file/d/1aWo0sCyhINroRTteR4mO433lmewlWFh4/view?usp=sharing)
+Pretrained model can be download in [PubTabNet](https://drive.google.com/file/d/16RlU_1373OP73AWl_L8FY46wTrqiycCi/view?usp=sharing) and [FinTabNet](https://drive.google.com/file/d/1aWo0sCyhINroRTteR4mO433lmewlWFh4/view?usp=sharing).
+(Please use [master_decoder_old20220923.py](https://github.com/namtuanly/MTL-TabNet/blob/main/mmocr/models/textrecog/decoders/master_decoder_old20220923.py) instead of [master_decoder.py](https://github.com/namtuanly/MTL-TabNet/blob/main/mmocr/models/textrecog/decoders/master_decoder.py) when using the pretrained model)
 
 <!-- Demo -->
 ## Demo
