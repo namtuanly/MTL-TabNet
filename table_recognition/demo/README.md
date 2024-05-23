@@ -20,21 +20,3 @@ This demo script will give a end to end result from a table image input. The che
 cd /MTL-TabNet
 python ./table_recognition/demo/demo.py
 ```
-
-
-
-### Table recognition result
-
-![MASTER's architecture](../../imgs/demo_result_show.jpg)
-
-
-
-![MASTER's architecture](../../imgs/demo_result_show2.jpg)
-
-
-
-![MASTER's architecture](../../imgs/demo_result_show3.jpg)
-
-
-
-![MASTER's architecture](../../imgs/demo_result_show4.jpg)
