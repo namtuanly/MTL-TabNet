@@ -14,7 +14,7 @@ This demo script will give a end to end result from a table image input. The che
 
    You can also download checkpoints in **Pretrain Model** of <a href="../../README.md">README.md</a>
 
-2. Run script. And you will get the table recognition result in a **HTML** file, which saved in the output dir.
+2. Run script (demo.py for PubTabNet and demo_FinTabNet.py for FinTabNet). And you will get the table recognition result in a **HTML** file, which saved in the output dir.
 
 ```shell
 cd /MTL-TabNet
